@@ -1,10 +1,9 @@
-
 <html>
 <head>
-<script src="shared-storage.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Happy Paws - Dashboard</title>
+  <script src="shared-storage.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +13,7 @@
     }
 
     body {
-      background: #f2f7fb;
+      background: linear-gradient(135deg, #f2f7fb, #e8f4ff 55%, #f8fbff);
       color: #333;
       display: flex;
       min-height: 100vh;
@@ -22,16 +21,23 @@
 
     .sidebar {
       width: 240px;
-      background: #fff;
+      background: rgba(255,255,255,.97);
       border-right: 1px solid #dce6ef;
       padding: 25px 15px;
       flex-shrink: 0;
+      box-shadow: 4px 0 20px rgba(22,74,123,.04);
+      position: relative;
+      z-index: 2;
     }
 
     .logo {
       text-align: center;
-      color: #087cff;
-      font-size: 24px;
+      background: linear-gradient(90deg,#087cff,#36b8d8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 26px;
+      letter-spacing: -.7px;
       font-weight: bold;
       margin-bottom: 8px;
     }
@@ -51,19 +57,29 @@
       border-radius: 8px;
       margin-bottom: 6px;
       font-size: 14px;
+      transition: background .25s ease, color .25s ease,
+                  transform .25s ease, box-shadow .25s ease;
     }
 
-    .menu a:hover,
-    .menu a.active {
+    .menu a:hover {
       background: #e5f2ff;
       color: #087cff;
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(8,124,255,.08);
+    }
+
+    .menu a.active {
+      background: linear-gradient(100deg,#e2f1ff,#f0f9ff);
+      color: #087cff;
       font-weight: bold;
+      box-shadow: inset 3px 0 #087cff;
     }
 
     .main {
       flex: 1;
       padding: 30px;
       min-width: 0;
+      animation: dashboardFadeIn .55s ease both;
     }
 
     .topbar {
@@ -77,7 +93,8 @@
 
     .topbar h1 {
       color: #164a7b;
-      font-size: 28px;
+      font-size: 30px;
+      letter-spacing: -.8px;
       margin-bottom: 6px;
     }
 
@@ -89,25 +106,72 @@
     .date {
       background: white;
       padding: 12px 16px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #dce6ef;
       color: #555;
       font-size: 14px;
+      box-shadow: 0 5px 18px rgba(22,74,123,.05);
+      transition: transform .2s ease;
+    }
+
+    .date:hover {
+      transform: translateY(-2px);
     }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(4,minmax(0,1fr));
       gap: 18px;
       margin-bottom: 25px;
     }
 
     .stat-card {
+      position: relative;
+      overflow: hidden;
       background: white;
       border-radius: 12px;
       padding: 22px;
       border: 1px solid #e0eaf3;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 3px 10px rgba(0,0,0,.03);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg,#087cff,#48c6d9);
+    }
+
+    .stat-card:nth-child(2)::before {
+      background: linear-gradient(90deg,#18a873,#76d6a7);
+    }
+
+    .stat-card:nth-child(3)::before {
+      background: linear-gradient(90deg,#f0a326,#ffcf70);
+    }
+
+    .stat-card:nth-child(4)::before {
+      background: linear-gradient(90deg,#8b70e8,#c1a8ff);
+    }
+
+    .stat-card::after {
+      content: "🐾";
+      position: absolute;
+      right: 15px;
+      bottom: 8px;
+      font-size: 43px;
+      opacity: .07;
+      transform: rotate(-15deg);
+      pointer-events: none;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(22,74,123,.10);
     }
 
     .stat-card p {
@@ -118,7 +182,8 @@
 
     .stat-card h2 {
       color: #164a7b;
-      font-size: 30px;
+      font-size: 34px;
+      letter-spacing: -1px;
       margin-bottom: 8px;
     }
 
@@ -141,6 +206,12 @@
       padding: 22px;
       margin-bottom: 20px;
       min-width: 0;
+      box-shadow: 0 5px 20px rgba(22,74,123,.035);
+      transition: box-shadow .25s ease;
+    }
+
+    .panel:hover {
+      box-shadow: 0 9px 26px rgba(22,74,123,.075);
     }
 
     .panel-header {
@@ -149,18 +220,28 @@
       align-items: center;
       gap: 10px;
       margin-bottom: 20px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid #edf3f8;
       flex-wrap: wrap;
     }
 
     .panel-header h3 {
       color: #164a7b;
       font-size: 17px;
+      letter-spacing: -.25px;
     }
 
     .view-link {
       color: #087cff;
       text-decoration: none;
       font-size: 13px;
+      font-weight: bold;
+      transition: color .2s ease;
+    }
+
+    .view-link:hover {
+      color: #005bc4;
+      text-decoration: underline;
     }
 
     .table-wrap {
@@ -175,8 +256,10 @@
 
     th {
       background: #f4f9fd;
-      color: #777;
-      font-size: 12px;
+      color: #52718c;
+      font-size: 10px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
       text-align: left;
       padding: 12px 10px;
     }
@@ -185,7 +268,16 @@
       padding: 14px 10px;
       border-bottom: 1px solid #edf1f5;
       font-size: 13px;
+      line-height: 1.5;
       overflow-wrap: anywhere;
+    }
+
+    tbody tr {
+      transition: background .2s ease;
+    }
+
+    tbody tr:hover {
+      background: #f5faff;
     }
 
     .empty {
@@ -199,9 +291,11 @@
       border-radius: 20px;
       padding: 5px 9px;
       font-size: 11px;
+      font-weight: bold;
       background: #e5f2ff;
       color: #087cff;
       white-space: nowrap;
+      border: 1px solid transparent;
     }
 
     .status.pending,
@@ -209,11 +303,13 @@
     .status.low-stock {
       background: #fff1d6;
       color: #a66a00;
+      border-color: #ffe2a5;
     }
 
     .status.cancelled {
       background: #ffe4e4;
       color: #bd3333;
+      border-color: #ffcaca;
     }
 
     .status.completed,
@@ -221,11 +317,12 @@
     .status.in-stock {
       background: #dcf8e8;
       color: #16834a;
+      border-color: #bcebd0;
     }
 
     .quick-links {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2,minmax(0,1fr));
       gap: 12px;
     }
 
@@ -240,11 +337,19 @@
       text-align: center;
       font-size: 13px;
       font-weight: bold;
+      transition: transform .22s ease, background .22s ease,
+                  box-shadow .22s ease, border-color .22s ease;
     }
 
     .quick-links a:hover {
       background: #e5f2ff;
       border-color: #b7d9ff;
+      transform: translateY(-3px);
+      box-shadow: 0 7px 17px rgba(8,124,255,.09);
+    }
+
+    .quick-links a:active {
+      transform: scale(.98);
     }
 
     .footer {
@@ -252,11 +357,24 @@
       font-size: 12px;
       color: #999;
       margin-top: 10px;
+      padding: 18px 0 4px;
+      border-top: 1px solid rgba(220,230,239,.7);
+    }
+
+    @keyframes dashboardFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @media (max-width: 1050px) {
       .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2,minmax(0,1fr));
       }
 
       .content-grid {
@@ -296,12 +414,16 @@
         padding: 10px 12px;
       }
 
+      .menu a:hover {
+        transform: none;
+      }
+
       .main {
         padding: 20px 14px;
       }
 
       .topbar h1 {
-        font-size: 24px;
+        font-size: 25px;
       }
 
       .stats {
@@ -316,8 +438,27 @@
         font-size: 26px;
       }
 
+      .stat-card:hover,
+      .panel:hover {
+        transform: none;
+      }
+
       .panel {
         padding: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .main {
+        animation: none;
+      }
+
+      .stat-card,
+      .panel,
+      .menu a,
+      .quick-links a,
+      .date {
+        transition: none;
       }
     }
   </style>
@@ -575,9 +716,9 @@
       recentPets.innerHTML = pets.slice(0, 5).map(function (pet) {
         return `
           <tr>
-            <td>${escapeHTML(pet.name || "Unnamed")}</td>
+            <td>${escapeHTML(pet.name || pet.petName || "Unnamed")}</td>
             <td>${escapeHTML(pet.ownerName || "N/A")}</td>
-            <td>${escapeHTML(pet.type || "N/A")}</td>
+            <td>${escapeHTML(pet.type || pet.petType || "N/A")}</td>
             <td>${escapeHTML(pet.breed || "N/A")}</td>
           </tr>
         `;
@@ -611,7 +752,7 @@
       list.innerHTML = todaysAppointments.slice(0, 5).map(function (appointment) {
         return `
           <tr>
-            <td>${escapeHTML(appointment.pet || "N/A")}</td>
+            <td>${escapeHTML(appointment.pet || appointment.petName || "N/A")}</td>
             <td>${escapeHTML(appointment.time || "N/A")}</td>
             <td>${escapeHTML(appointment.service || "N/A")}</td>
             <td><span class="status ${getStatusClass(appointment.status)}">${escapeHTML(appointment.status || "N/A")}</span></td>
@@ -696,6 +837,7 @@
 
     window.addEventListener("pageshow", updateDashboard);
     window.addEventListener("storage", updateDashboard);
+
     document.addEventListener("visibilitychange", function () {
       if (!document.hidden) {
         updateDashboard();
